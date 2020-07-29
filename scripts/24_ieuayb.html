@@ -20,7 +20,7 @@
 
 			var ieuaCities = "https://gist.githubusercontent.com/janicekchen/6e5d4c584049ad87f82d048c2fb583c8/raw/6f3da71300407773f222d53c61fe4e046cdf1c2b/ieua_cities.geojson"
 
-			var ieuaEstated = "https://gist.githubusercontent.com/janicekchen/6e5d4c584049ad87f82d048c2fb583c8/raw/285f80a939d53c50b7d592ca8d3056a3f0d4cb29/ieua_acs_est.geojson"
+			var ieuaEstated = "https://gist.githubusercontent.com/janicekchen/6e5d4c584049ad87f82d048c2fb583c8/raw/a3d9e2dbda98ff6b773cbb85ff36b9d681e99e79/ieua_acs_est.geojson"
 
 			const mapH = 700;
 			const mapW = 1000;
@@ -47,15 +47,11 @@
             
             mapSVG.call(texture)
 		
-			var layer0 = mapSVG.append("g"); // no data
 			var layer1 = mapSVG.append("g"); //base
 			var layer2 = mapSVG.append("g"); // district boundary
 			var layer3 = mapSVG.append("g"); //dots
 			var layer4 = mapSVG.append("g"); // cities
 			
-
-
-
 			d3.json(ieuaEstated).then(function(data) {
 
 	
@@ -88,16 +84,16 @@
 				// legend
 				var defs = mapSVG.append("defs")
 
-				var legendX = 750;
-				var legendY = 175;
-				var legendW = 7;
-				var legendH = 300;
+				var legendX = 500;
+				var legendY = 550;
+				var legendW = 300;
+				var legendH = 7;
 
 	            var linearGradient = defs.append("linearGradient")
 				                           .attr("id", "linear-gradient")
-				                           .attr("x1", "0%")
+				                           .attr("x1", "100%")
 				                           .attr("x2", "0%")
-				                           .attr("y1", "100%")
+				                           .attr("y1", "0%")
 				                           .attr("y2", "0%")
 
 				linearGradient.selectAll("stop")
@@ -131,14 +127,14 @@
 				      .data(d3.range(3))
 				      .enter()
 				      .append("line")
-				      .attr("x1", legendX - 5)
-				      .attr("x2", legendX + legendW)
-				      .attr("y1", function(d) {
-				      	return legendY + (d * legendH / 2)
+				      .attr("x1", function(d) {
+				      	return legendX + (d * legendW / 2);
 				      })
-				      .attr("y2", function(d) {
-				      	return legendY + (d * legendH / 2)
+				      .attr("x2", function(d) {
+				      	return legendX + (d * legendW / 2);
 				      })
+				      .attr("y1", legendY - 5)
+				      .attr("y2", legendY + legendH)
 				      .attr("stroke-width", 0.5)
 				      .attr("stroke", "black")
 
@@ -150,54 +146,20 @@
 				          	])
 				          .enter()
 				          .append("text")
-				          .attr("x", legendX - 7)
-				          .attr("y", function(d) {
-				          	return legendY + (d.index * legendH / 2) + 3;
+				          .attr("y", legendY - 10)
+				          .attr("x", function(d) {
+				          	return legendX + (d.index * legendW / 2);
 				          })
 				          .style("font-size", 10)
-				          .style("text-anchor", "end")
+				          .style("text-anchor", "middle")
 				          .style("font-family", "Helvetica Neue")
 				          .style("font-weight", 300)
 				          .text(function(d) {
 				          	return d.value;
 				          })
 
-				 legendLabs.append('rect')
-				           .attr("y", legendY - 50)
-				           .attr("x", legendX - 95)
-				           .attr("width", legendW * 2)
-				           .attr("height", legendW * 2)
-				           .attr("fill", texture.url())
-				           .attr("stroke", "lightgrey")
-				           .attr("stroke-width", 1)
-
-				 legendLabs.append('text')
-				           .attr("y", legendY - 50 + (legendW + 3) )
-				           .attr("x", legendX - 90 + (legendW * 2))
-				           .text("no program adoption")
-				           .style("font-size", 10)
-				           .style("font-family", "Helvetica Neue")
-				           .style("font-weight", 300)
-						
-
-
 			})
 
-			d3.json(ieuaBG).then(function(data) {
-
-
-				layer0.selectAll("path")
-				      .data(data.features)
-				      .enter()
-				      .append("path")
-				      .attr("d", path.projection(projection))
-				      .attr("stroke", "lightgrey")
-				      .attr("fill", texture.url())
-				      .attr("stroke-width", 1)
-
-
-
-			})
 
 			d3.json(ieuaBounds).then(function(data) {
 
@@ -212,22 +174,6 @@
 				      .attr("stroke-width", 2)
 				      .attr("stroke-opacity", 1)
 				      .style("z-index", 1);
-
-				layer2.append("text")
-				      .attr("x", 625)
-				      .attr("y", 575)
-				      .text("ieua Water District")
-				      .style("font-family", "Helvetica Neue")
-				      .style("font-weight", "500")
-				      .style("font-size", 14)
-
-				layer2.append("line")
-				      .attr("x1", 645)
-				      .attr("y1", 560)
-				      .attr("x2", 600)
-				      .attr("y2", 523)
-				      .attr("stroke", "black")
-				      .attr("stroke-width", 1.5)
 
 			})
 
@@ -307,6 +253,22 @@
 				      .attr("opacity", 0.5)
 				      .attr("font-size", 7)
 			})
+
+			layer4.append("text")
+			      .attr("x", 575)
+			      .attr("y", 400)
+			      .text("IEUA Water District")
+			      .style("font-family", "Helvetica Neue")
+			      .style("font-weight", "500")
+			      .style("font-size", 14)
+
+			layer4.append("line")
+			      .attr("x1", 600)
+			      .attr("y1", 385)
+			      .attr("x2", 580)
+			      .attr("y2", 335)
+			      .attr("stroke", "black")
+			      .attr("stroke-width", 1.5)
 
 
 			// titles:
