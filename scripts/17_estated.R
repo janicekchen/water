@@ -50,8 +50,6 @@ class(scv_est$prop_value) <- "numeric"
 ca_acs_est <- get_acs(geography = "block group", variable = c(med_yb = "B25035_001", med_value = "B25077_001"), state = "CA", geometry = TRUE, output = "wide") 
 
 # join to Estated data
-# scv_clip <- ca_acs_est[scv_est, , op = "st_intersects"]
-# ieua_clip <- ca_acs_est[scv_est, , op = "st_intersects"]
 scv_acs_est <- scv_est %>%
   st_as_sf(coords = c(lon = "long", lat = "lat")) %>%
   st_set_crs(st_crs(ca_acs_est)) %>%
@@ -66,14 +64,12 @@ ieua_acs_est <- ieua_est %>%
 scv_acs_est %<>% group_by(program, GEOID) %>%
   summarise(program_total = n(), scv_yb = as.integer(median(year_built)), scv_pv = median(prop_value), ) %>%
   st_set_geometry(NULL) %>%
-  pivot_wider(names_from = program, values_from = c(program_total, scv_yb, scv_pv)) %>%
   left_join(ca_acs_est) %>%
   st_as_sf()
 
 ieua_acs_est %<>% group_by(program, GEOID) %>%
   summarise(program_total = n(), ieua_yb = as.integer(median(year_built)), ieua_pv = median(prop_value)) %>%
   st_set_geometry(NULL) %>%
-  pivot_wider(names_from = program, values_from = c(program_total, scv_yb, scv_pv)) %>%
   left_join(ca_acs_est) %>%
   st_as_sf()
 

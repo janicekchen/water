@@ -1,0 +1,280 @@
+<! DOCTYPE html>
+
+<html>
+	<head>
+		<meta charset = "UTF-8">
+		<script src ='https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.min.js'></script>
+		<script src="https://unpkg.com/textures@1.2.0/dist/textures.js"></script>
+		<script src="https://d3js.org/d3-color.v1.min.js"></script>
+		<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+		<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+	</head>
+	<body>
+		<script type = "text/javascript">
+
+			var scvBG = "https://gist.githubusercontent.com/janicekchen/6e5d4c584049ad87f82d048c2fb583c8/raw/24094dcbc9579899d22e6610abd15afe166226d3/scv_bg.geojson";
+
+			var scvBounds = "https://gist.githubusercontent.com/janicekchen/6e5d4c584049ad87f82d048c2fb583c8/raw/08bd5c284e488f43224dbfd5a85b5d88a0247712/scv_bounds.geojson"
+			
+			var scvPoints = "https://gist.githubusercontent.com/janicekchen/6e5d4c584049ad87f82d048c2fb583c8/raw/24094dcbc9579899d22e6610abd15afe166226d3/scv_gc.csv"
+
+			var scvEstated = "https://gist.githubusercontent.com/janicekchen/6e5d4c584049ad87f82d048c2fb583c8/raw/285f80a939d53c50b7d592ca8d3056a3f0d4cb29/scv_acs_est.geojson"
+
+			const mapH = 700;
+			const mapW = 1000;
+
+			
+
+
+			var mapSVG = d3.select("body")
+			               .append("svg")
+			               .attr("height", mapH)
+			               .attr("width", mapW)
+			               .style("background-color", "#fafafa");
+
+			var path = d3.geoPath();
+			var projection = d3.geoMercator()
+							   .scale([55000])
+			                   .center([-118.3285, 34.75823])
+			                   .translate([mapW/1.5, 100]);
+
+			const texture = textures.lines()
+			                        .lighter()
+			                        .size(7)
+			                        .strokeWidth(0.1)
+            
+            mapSVG.call(texture)
+		
+			var layer0 = mapSVG.append("g"); // no data
+			var layer1 = mapSVG.append("g"); //base
+			var layer2 = mapSVG.append("g"); // district boundary
+			var layer3 = mapSVG.append("g"); //dots
+			
+
+
+
+			d3.json(scvEstated).then(function(data) {
+
+				var filtData = data.features.filter(function(d) {
+					return d.properties.program == "Pool Cover";
+				})
+
+				var diffMin = d3.min(filtData, function(d) {
+					return d.properties.yb_diff;
+				});
+
+				var diffMax = d3.max(filtData, function(d) {
+					return d.properties.yb_diff;
+				})
+
+				var colorScale = d3.scaleDiverging()
+				                   .domain([diffMin, 0, diffMax])
+				                   .interpolator(d3.interpolateRdBu);
+
+
+
+				layer1.selectAll("path")
+				      .data(filtData)
+				      .enter()
+				      .append("path")
+				      .attr("d", path.projection(projection))
+				      .attr("stroke", "white")
+				      .attr("fill", function(d) {
+				      	return colorScale(d.properties.yb_diff); 
+				      })
+				      .attr("stroke-width", 1)
+
+				// legend
+				var defs = mapSVG.append("defs")
+
+				var legendX = 750;
+				var legendY = 175;
+				var legendW = 7;
+				var legendH = 300;
+
+	            var linearGradient = defs.append("linearGradient")
+				                           .attr("id", "linear-gradient")
+				                           .attr("x1", "0%")
+				                           .attr("x2", "0%")
+				                           .attr("y1", "100%")
+				                           .attr("y2", "0%")
+
+				linearGradient.selectAll("stop")
+				              .data([
+				              	{offset: "0%", color: "#b2182b"},
+				              	{offset: "20%", color: "#ef8a62"},
+				              	{offset: "40%", color: "#fddbc7"},
+				              	{offset: "60%", color: "#d1e5f0"},
+				              	{offset: "90%", color: "#67a9cf"},
+				              	{offset: "100%", color: "#2166ac"}
+				              	])
+				              .enter()
+				              .append("stop")
+				              .attr("offset", function(d){
+				              	return d.offset;
+				              }) 
+				              .attr("stop-color", function(d) {
+				              	return d.color;
+				              })
+
+				mapSVG.append("rect")
+				      .attr("x", legendX)
+				      .attr("y", legendY)
+				      .attr("height", legendH)
+				      .attr("width", legendW)
+				      .attr("fill", "url(#linear-gradient)")
+
+				var legendLabs = mapSVG.append("g")
+
+				legendLabs.selectAll("line")
+				      .data(d3.range(3))
+				      .enter()
+				      .append("line")
+				      .attr("x1", legendX - 5)
+				      .attr("x2", legendX + legendW)
+				      .attr("y1", function(d) {
+				      	return legendY + (d * legendH / 2)
+				      })
+				      .attr("y2", function(d) {
+				      	return legendY + (d * legendH / 2)
+				      })
+				      .attr("stroke-width", 0.5)
+				      .attr("stroke", "black")
+
+				legendLabs.selectAll("text")
+				          .data([
+				          	{index: 0, value: d3.format(".0f")(Math.abs(diffMax)) + " yrs younger"},
+				          	{index: 1, value: "median age"},
+				          	{index: 2, value: d3.format(".0f")(Math.abs(diffMin)) + " yrs older"}
+				          	])
+				          .enter()
+				          .append("text")
+				          .attr("x", legendX - 7)
+				          .attr("y", function(d) {
+				          	return legendY + (d.index * legendH / 2) + 3;
+				          })
+				          .style("font-size", 10)
+				          .style("text-anchor", "end")
+				          .style("font-family", "Helvetica Neue")
+				          .style("font-weight", 300)
+				          .text(function(d) {
+				          	return d.value;
+				          })
+
+				 legendLabs.append('rect')
+				           .attr("y", legendY - 50)
+				           .attr("x", legendX - 95)
+				           .attr("width", legendW * 2)
+				           .attr("height", legendW * 2)
+				           .attr("fill", texture.url())
+				           .attr("stroke", "lightgrey")
+				           .attr("stroke-width", 1)
+
+				 legendLabs.append('text')
+				           .attr("y", legendY - 50 + (legendW + 3) )
+				           .attr("x", legendX - 90 + (legendW * 2))
+				           .text("no program adoption")
+				           .style("font-size", 10)
+				           .style("font-family", "Helvetica Neue")
+				           .style("font-weight", 300)
+						
+
+
+			})
+
+			d3.json(scvBG).then(function(data) {
+
+
+				layer0.selectAll("path")
+				      .data(data.features)
+				      .enter()
+				      .append("path")
+				      .attr("d", path.projection(projection))
+				      .attr("stroke", "lightgrey")
+				      .attr("fill", texture.url())
+				      .attr("stroke-width", 1)
+
+
+
+			})
+
+			d3.json(scvBounds).then(function(data) {
+
+				layer2.append("g")
+				      .selectAll("path")
+				      .data(data.features)
+				      .enter()
+				      .append("path")
+				      .attr("d", path.projection(projection))
+				      .attr("fill", "none")
+				      .attr("stroke", "black")
+				      .attr("stroke-width", 2)
+				      .attr("stroke-opacity", 1)
+				      .style("z-index", 1);
+
+				layer2.append("text")
+				      .attr("x", 625)
+				      .attr("y", 575)
+				      .text("SCV Water District")
+				      .style("font-family", "Helvetica Neue")
+				      .style("font-weight", "500")
+				      .style("font-size", 14)
+
+				layer2.append("line")
+				      .attr("x1", 645)
+				      .attr("y1", 560)
+				      .attr("x2", 600)
+				      .attr("y2", 523)
+				      .attr("stroke", "black")
+				      .attr("stroke-width", 1.5)
+
+			})
+
+			d3.csv(scvPoints).then(function(data) {
+
+				var filtData = data.filter(function(d) {
+					return d.program == "Pool Cover"
+				})
+
+				layer3.selectAll("circle")
+				      .data(filtData)
+				      .enter()
+				      .append("circle")
+				      .attr("cx", function(d) {
+				      	return projection([d.long, d.lat])[0];
+				      })
+				      .attr("cy", function(d) {
+				      	return projection([d.long, d.lat])[1];
+				      })
+				      .attr("r", 1)
+				      .attr("opacity", 0.2)
+				      .attr("fill", "darkblue")
+
+			})
+
+
+			// titles:
+			mapSVG
+			  .append("text")
+			  .text("Pool Cover Adopters: Deviance from Median Age of Home") 
+			  .attr("x", 200)
+			  .attr("y", 50)
+			  .style("font-size", 20)
+			  .style("font-family", "Helvetica Neue")
+			  .style("font-weight", "700")
+
+
+			mapSVG
+			  .append("text")
+			  .text("by Census block group")
+			  .attr("x", 200)
+			  .attr("y", 70)
+			  .style("font-size", 12)
+			  .style("font-family", "Helvetica Neue")
+			  .style("font-weight", "700")
+
+
+		</script>
+	</body>
+
+</html>

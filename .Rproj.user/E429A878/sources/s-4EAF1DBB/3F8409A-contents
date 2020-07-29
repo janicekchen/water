@@ -75,7 +75,8 @@ ieua_acs_est %<>% group_by(program, GEOID) %>%
 
 # calculating differences between median for tract and median for adopters of program
 scv_acs_est %<>% mutate(yb_diff = scv_yb - med_ybE, pv_diff = scv_pv - med_valueE)
-ieua_acs_est %<>% mutate(yb_diff = ieua_yb - med_ybE, pv_diff = ieua_pv - med_valueE)
+ieua_acs_est %<>% mutate(yb_diff = ieua_yb - med_ybE, pv_diff = ieua_pv - med_valueE) %>%
+  filter(GEOID != "060710012003")
 
 ggplot() +
   geom_sf(data = ieua_acs_est, aes(fill = pv_diff), color = "white") 
