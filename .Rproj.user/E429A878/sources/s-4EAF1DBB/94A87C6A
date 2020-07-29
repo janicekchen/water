@@ -1,0 +1,33 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1595889852740.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "94A87C6A",
+    "lastKnownWriteTime" : 4314478147,
+    "last_content_update" : 1595889852740,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "63A1AF0E",
+        "caption" : "scv_waterbg",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=scv_waterbg&cache_key=63A1AF0E",
+        "displayedObservations" : "102",
+        "environment" : "",
+        "expression" : "scv_waterbg",
+        "object" : "scv_waterbg",
+        "preview" : "0",
+        "totalObservations" : "102",
+        "variables" : "28"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

@@ -1,0 +1,33 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1595902697180.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "D58804A4",
+    "lastKnownWriteTime" : 1595901819,
+    "last_content_update" : 1595902697180,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "3D474352",
+        "caption" : "scv_water",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=scv_water&cache_key=3D474352",
+        "displayedObservations" : "741",
+        "environment" : "",
+        "expression" : "scv_water",
+        "object" : "scv_water",
+        "preview" : "0",
+        "totalObservations" : "741",
+        "variables" : "8"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 8,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

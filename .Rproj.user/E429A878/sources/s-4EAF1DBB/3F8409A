@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1595942789491.000,
+    "dirty" : true,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "3F8409A",
+    "lastKnownWriteTime" : 1595985287,
+    "last_content_update" : 1595985347024,
+    "path" : "~/Documents/water/scripts/17_estated.R",
+    "project_path" : "scripts/17_estated.R",
+    "properties" : {
+        "cursorPosition" : "84,0",
+        "scrollLine" : "66",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 12,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

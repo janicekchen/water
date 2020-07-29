@@ -1,0 +1,232 @@
+<! DOCTYPE html>
+
+<html>
+	<head>
+		<meta charset = "UTF-8">
+		<script src ='https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.min.js'></script>
+	</head>
+	<body>
+		<script type = "text/javascript">
+
+			var scvBG = "https://gist.githubusercontent.com/janicekchen/6e5d4c584049ad87f82d048c2fb583c8/raw/24094dcbc9579899d22e6610abd15afe166226d3/scv_bg.geojson";
+
+			var scvBounds = "https://gist.githubusercontent.com/janicekchen/6e5d4c584049ad87f82d048c2fb583c8/raw/08bd5c284e488f43224dbfd5a85b5d88a0247712/scv_bounds.geojson"
+			var scvPoints = "https://gist.githubusercontent.com/janicekchen/6e5d4c584049ad87f82d048c2fb583c8/raw/24094dcbc9579899d22e6610abd15afe166226d3/scv_gc.csv"
+
+			const mapH = 700;
+			const mapW = 1000;
+
+			var mapSVG = d3.select("body")
+			               .append("svg")
+			               .attr("height", mapH)
+			               .attr("width", mapW)
+			               .style("background-color", "#fafafa");
+
+			var path = d3.geoPath();
+			var projection = d3.geoMercator()
+							   .scale([55000])
+			                   .center([-118.3285, 34.75823])
+			                   .translate([mapW/1.5, 100]);
+
+			var colorScheme1 = ["#e8e8e8", "#d3a7cb", "#be64ac"];
+			var colorScheme2 = ["#e8e8e8", "#a6d9d9", "#5ac8c8"];
+
+			var layer1 = mapSVG.append("g"); //base
+			var layer2 = mapSVG.append("g"); // darken
+			var layer3 = mapSVG.append("g"); // boundaries
+			var layer4 = mapSVG.append("g"); //dots
+			
+
+			d3.json(scvBG).then(function(data) {
+
+				var colorScale1 = d3.scaleQuantile()
+			                    .domain([d3.min(data.features, function(d) {
+			                    	return d.properties.progTotalN;
+			                    }), d3.max(data.features, function(d) {
+			                    	return d.properties.progTotalN;
+			                    })])
+			                    .range(colorScheme1)
+
+			    var colorScale2 = d3.scaleQuantile()
+			                    .domain([d3.min(data.features, function(d) {
+			                    	return d.properties.mhiE;
+			                    }), d3.max(data.features, function(d) {
+			                    	return d.properties.mhiE;
+			                    })])
+			                    .range(colorScheme2)
+
+				layer1
+				      .selectAll("path")
+				      .data(data.features)
+				      .enter()
+				      .append("path")
+				      .attr("d", path.projection(projection))
+				      .attr("fill", function(d) {
+				      	return colorScale1(d.properties.progTotalN);
+				      })
+				      .attr("stroke", "white")
+				      .attr("stroke-width", 1)
+
+				layer2
+				      .selectAll("path")
+				      .data(data.features)
+				      .enter()
+				      .append("path")
+				      .attr("d", path.projection(projection))
+				      .attr("fill", function(d) {
+				      	return colorScale2(d.properties.mhiE);
+				      })
+				      .attr("stroke", "white")
+				      .attr("stroke-width", 1)
+				      .style("mix-blend-mode", "darken")
+
+			});
+
+			layer1
+			      .selectAll("rect")
+			      .data(d3.range(3))
+			      .enter()
+			      .append("rect")
+			      .attr("x", function(d) {
+			      	return 625 + (30 * d);
+			      })
+			      .attr("y", 260)
+			      .attr("width", 30)
+			      .attr("height", 90)
+			      .attr("fill", function(d) {
+			      	return colorScheme1[d];
+			      })
+
+			layer2
+			      .selectAll("rect")
+			      .data(d3.range(3))
+			      .enter()
+			      .append("rect")
+			      .attr("x", function(d) {
+			      	return 625;
+			      })
+			      .attr("y", function(d) {
+			      	return 260 + (30 * d);
+			      })
+			      .attr("width", 90)
+			      .attr("height", 30)
+			      .attr("fill", function(d) {
+			      	return colorScheme2[2 - d];
+			      })
+			      .style("mix-blend-mode", "darken");
+
+			mapSVG.append("line")
+			      .attr("x1", 625)
+			      .attr("x2", 625)
+			      .attr("y1", 260 + 90 + 1.5)
+			      .attr("y2", 260)
+			      .attr("stroke", "black")
+			      .attr("stroke-width", 3);
+
+			mapSVG.append("line")
+			      .attr("x1", 625 + 90)
+			      .attr("x2", 625)
+			      .attr("y1", 260 + 90)
+			      .attr("y2", 260 + 90)
+			      .attr("stroke", "black")
+			      .attr("stroke-width", 3);
+
+
+			mapSVG.append("polygon")
+			      .attr("points", "715, 345 715, 355, 725, 350")
+			      .style("fill", "black");
+
+			mapSVG.append("polygon")
+			      .attr("points", "620, 260 630, 260 625, 250")
+
+
+			mapSVG.append("text")
+			      .attr("x", 625)
+			      .attr("y", 370)
+			      .style("font-family", "Helvetica Neue")
+			      .style("font-weight", "200")
+			      .style("font-size", 13)
+			      .text("program adoption")
+
+			mapSVG.append("text")
+			      .attr("x", 655)
+			      .attr("y", 340)
+			      .style("font-family", "Helvetica Neue")
+			      .style("font-weight", "200")
+			      .style("font-size", 13)
+			      .text("med. household income")
+			      .attr("transform", "rotate(90, 625, 340), translate(-100, 20)")
+
+			d3.json(scvBounds).then(function(data) {
+
+				layer3.append("g")
+				      .selectAll("path")
+				      .data(data.features)
+				      .enter()
+				      .append("path")
+				      .attr("d", path.projection(projection))
+				      .attr("fill", "none")
+				      .attr("stroke", "black")
+				      .attr("stroke-width", 2)
+				      .attr("stroke-opacity", 1)
+				      .style("z-index", 1);
+
+				layer3.append("text")
+				      .attr("x", 650)
+				      .attr("y", 550)
+				      .text("SCV Water District")
+				      .style("font-family", "Helvetica Neue")
+				      .style("font-weight", "500")
+				      .style("font-size", 14)
+
+				layer3.append("line")
+				      .attr("x1", 645)
+				      .attr("y1", 543)
+				      .attr("x2", 600)
+				      .attr("y2", 523)
+				      .attr("stroke", "black")
+				      .attr("stroke-width", 1.5)
+
+			})
+
+			d3.csv(scvPoints).then(function(data) {
+
+				layer4.selectAll("circle")
+				      .data(data)
+				      .enter()
+				      .append("circle")
+				      .attr("cx", function(d) {
+				      	return projection([d.long, d.lat])[0];
+				      })
+				      .attr("cy", function(d) {
+				      	return projection([d.long, d.lat])[1];
+				      })
+				      .attr("r", 1)
+				      .attr("opacity", 0.2)
+				      .attr("fill", "darkblue")
+
+			})
+
+			mapSVG
+			  .append("text")
+			  .text("Rate of Program Adoption by Median Household Income")
+			  .attr("x", 200)
+			  .attr("y", 50)
+			  .style("font-size", 20)
+			  .style("font-family", "Helvetica Neue")
+			  .style("font-weight", "700")
+
+
+			mapSVG
+			  .append("text")
+			  .text("by Census block group")
+			  .attr("x", 200)
+			  .attr("y", 70)
+			  .style("font-size", 12)
+			  .style("font-family", "Helvetica Neue")
+			  .style("font-weight", "700")
+
+		</script>
+	</body>
+
+</html>

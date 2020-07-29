@@ -1,0 +1,88 @@
+library(tidyverse)
+library(magrittr)
+library(sf)
+library(leaflet)
+library(geojsonio)
+library(lubridate)
+library(tigris)
+library(tidycensus)
+options(tigris_class = "sf")
+
+# READING DATA
+# water
+scv_water <- read.csv("data/processed/scv_gc.csv") %>%
+  select(-c(X))
+ieua_water <- read.csv("data/processed/turf_gc.csv") %>%
+  select(-c(X))
+# estated
+scv_est <- read.csv("data/processed/estated_scv_all.csv")
+ieua_est <- read.csv("data/processed/estated_ieua.csv")
+
+
+# WRANGLING
+# joining water and estated data
+scv_est %<>% cbind(scv_water) %>%
+  select(c(14, 2:11, 17:18))
+
+ieua_est %<>% cbind(ieua_water) %>%
+  select(c(14, 2:11, 21:22))
+
+# filtering out error rows
+scv_est %<>% filter(!grepl("APEO1", address), !grepl("PW01", address), !grepl("PW02", address), !grepl("APW01", address), !grepl("MURRIETA", address))
+
+ieua_est %<>% filter(!grepl("APEO1", address), !grepl("PW01", address), !grepl("PW02", address), !grepl("APW01", address))
+
+# checking classes
+class(ieua_est$bed_count) <- "numeric"
+class(ieua_est$year_built) <- "numeric"
+class(ieua_est$bath_count) <- "numeric"
+class(ieua_est$area_sqft) <- "numeric"
+class(ieua_est$prop_value) <- "numeric"
+
+class(scv_est$bed_count) <- "numeric"
+class(scv_est$year_built) <- "numeric"
+class(scv_est$bath_count) <- "numeric"
+class(scv_est$area_sqft) <- "numeric"
+class(scv_est$prop_value) <- "numeric"
+
+# CENSUS DATA
+# gathering census data to contextualize Estated data
+ca_acs_est <- get_acs(geography = "block group", variable = c(med_yb = "B25035_001", med_value = "B25077_001"), state = "CA", geometry = TRUE, output = "wide") 
+
+# join to Estated data
+scv_acs_est <- scv_est %>%
+  st_as_sf(coords = c(lon = "long", lat = "lat")) %>%
+  st_set_crs(st_crs(ca_acs_est)) %>%
+  st_join(ca_acs_est, join = st_within)
+  
+ieua_acs_est <- ieua_est %>%
+  st_as_sf(coords = c(lon = "long", lat = "lat")) %>%
+  st_set_crs(st_crs(ca_acs_est)) %>%
+  st_join(ca_acs_est, join = st_within)
+
+# aggregating instances by census block group
+scv_acs_est %<>% group_by(program, GEOID) %>%
+  summarise(program_total = n(), scv_yb = as.integer(median(year_built)), scv_pv = median(prop_value), ) %>%
+  st_set_geometry(NULL) %>%
+  left_join(ca_acs_est) %>%
+  st_as_sf()
+
+ieua_acs_est %<>% group_by(program, GEOID) %>%
+  summarise(program_total = n(), ieua_yb = as.integer(median(year_built)), ieua_pv = median(prop_value)) %>%
+  st_set_geometry(NULL) %>%
+  left_join(ca_acs_est) %>%
+  st_as_sf()
+
+# calculating differences between median for tract and median for adopters of program
+scv_acs_est %<>% mutate(yb_diff = scv_yb - med_ybE, pv_diff = scv_pv - med_valueE)
+ieua_acs_est %<>% mutate(yb_diff = ieua_yb - med_ybE, pv_diff = ieua_pv - med_valueE)
+
+ggplot() +
+  geom_sf(data = ieua_acs_est, aes(fill = pv_diff), color = "white") 
+
+st_write(scv_acs_est, "data/processed/scv_acs_est.geojson")
+st_write(ieua_acs_est, "data/processed/ieua_acs_est.geojson")
+
+
+
+

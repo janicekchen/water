@@ -1,0 +1,33 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1595939726760.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "CF0005AC",
+    "lastKnownWriteTime" : 7947574004695433220,
+    "last_content_update" : 1595939726760,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "2BB14BAF",
+        "caption" : "ieua_cities",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=ieua_cities&cache_key=2BB14BAF",
+        "displayedObservations" : 9,
+        "environment" : "",
+        "expression" : "ieua_cities",
+        "object" : "ieua_cities",
+        "preview" : 0,
+        "totalObservations" : 9,
+        "variables" : 2
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 10,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

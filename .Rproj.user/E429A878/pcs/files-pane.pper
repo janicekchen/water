@@ -1,0 +1,9 @@
+{
+    "path" : "~/Documents/water/data/processed",
+    "sortOrder" : [
+        {
+            "ascending" : true,
+            "columnIndex" : 2
+        }
+    ]
+}
